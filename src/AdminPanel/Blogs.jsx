@@ -245,6 +245,7 @@ const Blogs = () => {
             tag: record?.tag?._id,
             faqs: record?.faqs || [],
             alt: record?.alt,
+            conclusion: record?.conclusion,
             slug: record?.slug
             // dob:record.dateOfBirth,
         });
@@ -368,6 +369,7 @@ const Blogs = () => {
             mdesc: values.mdesc,
             category: values.category,
             tag: values.tag,
+            conclusion: values.conclusion,
             author: auth1?.user?._id,
             image: image1,
             content: editorContent,
@@ -424,6 +426,9 @@ const Blogs = () => {
             content: editorContent,
             faqs: values.faqs,
             alt: values.alt,
+            conclusion: values.conclusion,
+            
+
             slug: values.slug,
             image: imageTrue ? image1 : values.logo,
 
@@ -699,7 +704,7 @@ const Blogs = () => {
                     </Form.Item>
 
 
-                    <Form.Item label="FAQS" required>
+                    <Form.Item label="FAQS" >
                         <Form.List name="faqs">
                             {(fields, { add, remove }) => (
                                 <>
@@ -713,7 +718,7 @@ const Blogs = () => {
                                                 {...restField}
                                                 label={`Q${index + 1}`}
                                                 name={[name, "ques"]}
-                                                rules={[{ required: true, message: "Please enter a question" }]}
+                                                // rules={[{ required: true, message: "Please enter a question" }]}
                                             >
                                                 <Input placeholder="Question" />
                                             </Form.Item>
@@ -722,7 +727,7 @@ const Blogs = () => {
                                                 {...restField}
                                                 label={`A${index + 1}`}
                                                 name={[name, "ans"]}
-                                                rules={[{ required: true, message: "Please enter an answer" }]}
+                                                // rules={[{ required: true, message: "Please enter an answer" }]}
                                             >
                                                 <Input placeholder="Answer" />
                                             </Form.Item>
@@ -797,6 +802,15 @@ const Blogs = () => {
                                 removeButtons: ["font"],
                             }}
                         />
+                    </Form.Item>
+
+
+                     <Form.Item
+                        name="conclusion"
+                        label="Conclusion"
+                    // rules={[{ required: true, message: "Please input the conclusion!" }]}
+                    >
+                        <Input.TextArea placeholder="Enter blog conclusion" rows={4} />
                     </Form.Item>
 
 
