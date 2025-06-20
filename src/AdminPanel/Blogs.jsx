@@ -12,7 +12,8 @@ import {
     DatePicker,
     InputNumber,
     Space,
-    Popconfirm
+    Popconfirm,
+    List
 } from "antd";
 
 import {
@@ -23,6 +24,7 @@ import {
     MinusCircleOutlined,
     PlusOutlined,
 } from "@ant-design/icons";
+import Dragger from "antd/es/upload/Dragger";
 import { UploadOutlined } from "@ant-design/icons";
 import { baseurl } from "../helper/Helper";
 import axios from "axios";
@@ -60,6 +62,7 @@ const Blogs = () => {
 
     const [search, setSearch] = useState("")
     const [seachloading, setSearchLoading] = useState(false);
+      const [images, setImages] = useState([]);
 
 
 
@@ -83,6 +86,7 @@ const Blogs = () => {
         setRecord(record);
         setImage(record?.image)
         setCross(true);
+         setImages(record?.images)
 
         // Access the clicked row's data here
         // You can now use 'record' to get the details of the clicked row
@@ -228,6 +232,7 @@ const Blogs = () => {
         setEditingCompBlog(null);
         form.resetFields();
         setIsModalOpen(true);
+        setImages([])
     };
 
     const handleEdit = (record) => {
@@ -236,17 +241,28 @@ const Blogs = () => {
         console.log(record);
         setSelectedCategory(record.category._id)
         setEditorContent(record.content)
+         setImages(record?.images)
+
+
+         const formattedAds = (record?.Ads || []).map(ad => ({
+    text1: ad?.text1 || [],
+    text2: ad?.text2 || '',
+    link1: ad?.link1 || ''
+  }));
 
         form.setFieldsValue({
             title: record?.title,
             mtitle: record?.mtitle,
+            
             mdesc: record?.mdesc,
             category: record?.category._id,
             tag: record?.tag?._id,
             faqs: record?.faqs || [],
             alt: record?.alt,
             conclusion: record?.conclusion,
-            slug: record?.slug
+            slug: record?.slug,
+            Ads: formattedAds,
+            linkArray: record?.linkArray || [] // ✅ add this
             // dob:record.dateOfBirth,
         });
         setIsModalOpen(true);
@@ -361,6 +377,37 @@ const Blogs = () => {
         }
     };
 
+
+
+    const handleUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file.file);
+    console.log("image", file.file);
+    try {
+      const response = await axios.post(
+`${baseurl}/api/catagory/uploadImage`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.imageUrl) {
+        // Store the image URL in the state array
+        setImages((prevImages) => [...prevImages, response.data.imageUrl]);
+        message.success("Image uploaded successfully!");
+      } else {
+        message.error("Image upload failed!");
+      }
+    } catch (error) {
+      message.error("Error uploading image!");
+    }
+
+    return false; // Prevent default upload behavior
+  };
+
     const handlePost = async (values) => {
 
         const postData = {
@@ -375,7 +422,10 @@ const Blogs = () => {
             content: editorContent,
             faqs: values.faqs,
             alt: values.alt,
-            slug: values.slug
+            slug: values.slug,
+            Ads: values.Ads,
+            linkArray: values.linkArray,
+             images: images
 
 
         };
@@ -394,6 +444,7 @@ const Blogs = () => {
                 setPhoto("");
                 fetchData();
                 setEditorContent("")
+                 setImages([]);
 
 
                 if (response?.data?._id) {
@@ -414,6 +465,10 @@ const Blogs = () => {
         }
     };
 
+
+    const removeImage = (url) => {
+    setImages((prevImages) => prevImages.filter((image) => image !== url));
+  };
     const handlePut = async (values) => {
 
         const postData = {
@@ -426,11 +481,12 @@ const Blogs = () => {
             content: editorContent,
             faqs: values.faqs,
             alt: values.alt,
+            Ads: values.Ads,
+            linkArray: values.linkArray,
             conclusion: values.conclusion,
-            
-
             slug: values.slug,
             image: imageTrue ? image1 : values.logo,
+             images: images
 
 
         };
@@ -452,6 +508,7 @@ const Blogs = () => {
                 form.resetFields();
                 setPhoto("");
                 setEditorContent("")
+                 setImages([]);
             }
         } catch (error) {
             console.log(error);
@@ -918,6 +975,143 @@ const Blogs = () => {
                         <Input placeholder="Enter Image alt" />
                     </Form.Item>
 
+
+                    {/* image array */}
+          <Form.Item label="Upload Icons">
+            <Dragger
+              name="file"
+              customRequest={handleUpload}
+              showUploadList={false}
+              multiple={true}
+            >
+              <div>
+                <PlusOutlined />
+                <div>Click or drag to upload images</div>
+              </div>
+            </Dragger>
+          </Form.Item>
+
+          {/* Display Uploaded Images */}
+          <Form.Item label="Uploaded Icons" >
+            <List
+              itemLayout="horizontal"
+              dataSource={images}
+              renderItem={(imageUrl) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      icon={<MinusCircleOutlined />}
+                      onClick={() => removeImage(imageUrl)}
+                      danger
+                    >
+                      Remove
+                    </Button>,
+                  ]}
+                >
+                  <List.Item.Meta
+                    title={
+                      <img
+                        src={`${baseurl}${imageUrl}`}
+                        alt="Image Preview"
+                        style={{ maxWidth: "100px", maxHeight: "100px" }}
+                      />
+                    }
+                  // description={imageUrl}
+                  />
+                </List.Item>
+              )}
+            />
+          </Form.Item>
+
+
+             <Form.List name="Ads">
+        {(fields, { add, remove }) => (
+          <>
+            {fields.map(({ key, name, ...restField }) => (
+              <div key={key} style={{ border: '1px solid #ccc', padding: 16, marginBottom: 16 }}>
+                
+                {/* text1 - multiple strings */}
+                <Form.List name={[name, 'text1']}>
+                  {(textFields, { add: addText, remove: removeText }) => (
+                    <>
+                      <label>Text1 (Array):</label>
+                      {textFields.map(({ key: textKey, name: textName, ...textRest }) => (
+                        <Space key={textKey} style={{ display: 'flex', marginBottom: 8 }} align="start">
+                          <Form.Item
+                            {...textRest}
+                            name={textName}
+                            rules={[{ required: true, message: 'Missing text1 value' }]}
+                          >
+                            <Input placeholder="Enter text1 item" />
+                          </Form.Item>
+                          <MinusCircleOutlined onClick={() => removeText(textName)} />
+                        </Space>
+                      ))}
+                      <Button type="dashed" onClick={() => addText()} icon={<PlusOutlined />}>
+                        Add Text1 Item
+                      </Button>
+                    </>
+                  )}
+                </Form.List>
+
+                {/* text2 - single string */}
+                <Form.Item
+                  {...restField}
+                  name={[name, 'text2']}
+                  rules={[{ required: true, message: 'Please input text2' }]}
+                >
+                  <Input placeholder="Enter text2" />
+                </Form.Item>
+
+                {/* link1 - single string */}
+                <Form.Item
+                  {...restField}
+                  name={[name, 'link1']}
+                  rules={[{ required: true, message: 'Please input link1' }]}
+                >
+                  <Input placeholder="Enter link1" />
+                </Form.Item>
+
+                <Button type="dashed" danger onClick={() => remove(name)} icon={<MinusCircleOutlined />}>
+                  Remove Ad Block
+                </Button>
+              </div>
+            ))}
+
+            <Form.Item>
+              <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                Add Ad
+              </Button>
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
+
+
+
+
+<Form.List name="linkArray">
+  {(fields, { add, remove }) => (
+    <>
+      <label>Link Array</label>
+      {fields.map(({ key, name, ...restField }) => (
+        <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="start">
+          <Form.Item
+            {...restField}
+            name={name}
+            rules={[{ required: true, message: 'Missing link' }]}
+          >
+            <Input placeholder="Enter link" />
+          </Form.Item>
+          <MinusCircleOutlined onClick={() => remove(name)} />
+        </Space>
+      ))}
+      <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
+        Add Link
+      </Button>
+    </>
+  )}
+</Form.List>
 
 
                     <Form.Item>
