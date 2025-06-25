@@ -36,6 +36,13 @@ import { Content } from "antd/es/layout/layout";
 const { Option } = Select;
 
 const { TextArea } = Input;
+
+// for editor
+
+
+
+
+import MyEditor from "./MyEditor";
 const Blogs = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -81,12 +88,15 @@ const Blogs = () => {
 
 
 
+
+
     const handleRowClick = (record) => {
         console.log("Clicked row data:", record);
         setRecord(record);
         setImage(record?.image)
         setCross(true);
-         setImages(record?.images)
+        setImages(record?.images)
+        setEditorContent(record.content)
 
         // Access the clicked row's data here
         // You can now use 'record' to get the details of the clicked row
@@ -233,6 +243,7 @@ const Blogs = () => {
         form.resetFields();
         setIsModalOpen(true);
         setImages([])
+        setEditorContent("")
     };
 
     const handleEdit = (record) => {
@@ -522,6 +533,12 @@ const Blogs = () => {
         }
     };
 
+
+ // for editor
+const onChangeContent = (value) => {
+    setEditorContent(value)
+  };
+
     const columns = [
         {
             title: "Blog Title",
@@ -686,12 +703,17 @@ const Blogs = () => {
                 </>)
             }
 
-            <Modal
-                title={editingCompBlog ? "Edit CompBlog" : "Add CompBlog"}
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-            >
+ <Modal
+  title={editingCompBlog ? "Edit CompBlog" : "Add CompBlog"}
+  open={isModalOpen}
+  onCancel={() => setIsModalOpen(false)}
+  footer={null}
+  maskStyle={{ zIndex: 10 }} // Background overlay
+  style={{ zIndex: 10 }}     // Modal box
+  modalRender={(modal) => (
+    <div style={{ zIndex: 10 }}>{modal}</div> // Ensures wrapper respects z-index
+  )}
+>
                 <Form form={form} layout="vertical" onFinish={handleSubmit}>
 
 
@@ -812,7 +834,7 @@ const Blogs = () => {
 
 
 
-                    <Form.Item label="Content" required>
+                    {/* <Form.Item label="Content" required>
                         <JoditEditor
                             ref={editor}
                             value={editorContent}
@@ -859,6 +881,12 @@ const Blogs = () => {
                                 removeButtons: ["font"],
                             }}
                         />
+                    </Form.Item> */}
+
+                    <Form.Item label="Content">
+
+                        
+                        <MyEditor setEditorContent={setEditorContent}  onChangeContent={onChangeContent} editorContent={editorContent}/>
                     </Form.Item>
 
 
