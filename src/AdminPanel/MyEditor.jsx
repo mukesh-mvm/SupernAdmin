@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useRef,useEffect} from 'react';
 import RichTextEditor from 'reactjs-tiptap-editor';
 import { BaseKit } from 'reactjs-tiptap-editor';
 
@@ -173,24 +173,32 @@ upload: async (file) => {
   
 ];
 
-const MyEditor = ({setEditorContent,onChangeContent,editorContent}) => {
+const MyEditor = ({setEditorContent,editorContent}) => {
   // const [content, setContent] = useState('');
+  const editorRef = useRef(null);
 
-  // const onChangeContent = (value) => {
-  //   setContent(value);
-  //   setEditorContent(value)
-  // };
+  const handleContentChange = (value) => {
+    setEditorContent(value);       // Update parent state
+    
+  };
+
+  useEffect(() => {
+    if (editorRef.current && typeof editorRef.current?.setContent === 'function') {
+      editorRef.current.setContent(editorContent || '');
+    }
+  }, [editorContent]);
+
 
   // console.log("content",content)
-  console.log("editor contend",editorContent)
+  console.log("ed")
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       <RichTextEditor
-        key={editorContent} // 🔁 Remount editor when content changes
         output="html"
+        ref={editorRef}
         content={editorContent}
-        onChangeContent={onChangeContent}
+        onChangeContent={handleContentChange}
         extensions={extensions}
         label="Rich Text Editor"
         minHeight={300}

@@ -535,9 +535,9 @@ const Blogs = () => {
 
 
  // for editor
-const onChangeContent = (value) => {
-    setEditorContent(value)
-  };
+// const onChangeContent = (value) => {
+//     setEditorContent(value)
+//   };
 
     const columns = [
         {
@@ -834,7 +834,7 @@ const onChangeContent = (value) => {
 
 
 
-                    {/* <Form.Item label="Content" required>
+                    <Form.Item label="Content" required>
                         <JoditEditor
                             ref={editor}
                             value={editorContent}
@@ -881,13 +881,13 @@ const onChangeContent = (value) => {
                                 removeButtons: ["font"],
                             }}
                         />
-                    </Form.Item> */}
+                    </Form.Item>
 
-                    <Form.Item label="Content">
+                    {/* <Form.Item label="Content">
 
                         
-                        <MyEditor setEditorContent={setEditorContent}  onChangeContent={onChangeContent} editorContent={editorContent}/>
-                    </Form.Item>
+                        <MyEditor setEditorContent={setEditorContent}  editorContent={editorContent}/>
+                    </Form.Item> */}
 
 
                      <Form.Item
